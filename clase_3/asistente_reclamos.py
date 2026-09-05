@@ -17,8 +17,11 @@ Variables de entorno (archivo .env):
 import os
 
 from dotenv import load_dotenv
-from clase_3.ai_models.gemini_assistant import get_gemini_response, crear_gemini_chat
-from clase_3.negocio.utils import calcular_reintegro, recuperar_contrasena
+from ai_models.gemini_assistant import get_gemini_response, crear_gemini_chat
+from negocio.utils import calcular_reintegro, recuperar_contrasena
+from speech.sp_recognition import speech_to_text
+from speech.voice_generation import generate_voice
+
 
 load_dotenv()  # Cargamos las variables de entorno desde el archivo .env
 
@@ -89,18 +92,27 @@ def main():
     assistant_name = os.getenv("ASSISTANT_NAME", "Atención al Cliente")
     chat = crear_gemini_chat(system_role=SYSTEM_ROLE, tools=HERRAMIENTAS, temperature=0.3, max_output_tokens=1024)
 
-    print(f"{assistant_name}: ¡Hola! ¿En qué puedo ayudarte hoy?")
+    #print(f"{assistant_name}: ¡Hola! ¿En qué puedo ayudarte hoy?")
+    mensaje_inicial = "¡Hola! ¿En qué puedo ayudarte hoy?"
+    print(f"{assistant_name}: {mensaje_inicial}")
     print("(escribí 'salir' para terminar)\n")
 
-    mensaje = ""
-    while mensaje.strip().lower() not in SALIDAS:
+    generate_voice(mensaje_inicial)
+
+    while True:
         try:
-            mensaje = get_user_input()
-            if mensaje.strip().lower() in SALIDAS:
+            mensaje = (speech_to_text() or "").strip()
+
+            if not mensaje:
+                # No se reconocio nada: volvemos a escuchar.
+                continue
+
+            if mensaje.lower() in SALIDAS:
                 break
 
             respuesta = atender_reclamo(chat, mensaje)
             print(f"{assistant_name}: {respuesta}\n")
+            generate_voice(respuesta)
 
         except (KeyboardInterrupt, EOFError):
             print(f"\n{assistant_name}: sesión finalizada.")

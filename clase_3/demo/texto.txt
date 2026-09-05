@@ -1,0 +1,10 @@
+SpeechRecognition es una interfaz unificada 
+que permite usar distintos motores STT, como 
+Google Speech API, IBM, Sphinx o Whisper.
+
+Ventaja: 
+Simplifica la captura de audio y la solicitud de 
+transcripción.
+
+Limitación: 
+La calidad depende del motor seleccionado.
